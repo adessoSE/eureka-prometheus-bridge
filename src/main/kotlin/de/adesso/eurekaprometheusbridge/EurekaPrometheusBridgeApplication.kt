@@ -1,7 +1,6 @@
 package de.adesso.eurekaprometheusbridge
 
 import khttp.get
-import khttp.put
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -24,32 +23,51 @@ fun main(args: Array<String>) {
 }
 
 
-@RestController
-internal class ServiceInstanceRestController {
-
-    @Autowired
-    val discoveryClient: DiscoveryClient? = null
-
-    @RequestMapping("/service-instances/{applicationName}")
-    fun serviceInstancesByApplicationName(
-            @PathVariable applicationName: String): List<ServiceInstance> {
-        return this.discoveryClient!!.getInstances(applicationName)
-    }
-}
 @Component
 class ScheduledClass {
-    var eureka_standard_url = "http://localhost:8761"
+    var eureka_standard_url = "http://127.0.0.1:8761"
+
 
     /**Queries Eureka for all App-Data*/
     @Scheduled(fixedRate = 10000)
     fun queryEureka(): Boolean {
         println("Now querying Eureka")
-        val r = get(eureka_standard_url + "/eureka/v2/apps")
+        val r = get(eureka_standard_url + "/eureka/v2/apps/")
         println("""
             Status: ${r.statusCode}
             Text: ${r.text}
             """)
         return true
     }
+
+
+    @Scheduled(fixedRate = 10000, initialDelay = 5000)
+    fun queryInstances(){
+        println("Query Instances")
+
+        val s = ServiceInstanceRestController().getAllInstances()
+
+//TODO Auslesen der Instanzinformationen etc
+        println("Query Instances ended")
+    }
+
+    @RestController
+    internal class ServiceInstanceRestController {
+
+        @Autowired
+        val discoveryClient: DiscoveryClient? = null
+
+        @RequestMapping("/service-instances/{applicationName}")
+        fun serviceInstancesByApplicationName(
+                @PathVariable applicationName: String): List<ServiceInstance> {
+            return this.discoveryClient!!.getInstances(applicationName)
+        }
+
+        fun getAllInstances(){
+            println(discoveryClient!!.description())
+        }
+    }
+
+
 
 }
