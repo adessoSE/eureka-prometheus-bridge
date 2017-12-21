@@ -6,9 +6,17 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cloud.client.ServiceInstance
+import org.springframework.cloud.client.discovery.DiscoveryClient
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+
 
 @SpringBootApplication
+@EnableDiscoveryClient
 @EnableScheduling
 class EurekaPrometheusBridgeApplication
 
@@ -18,6 +26,21 @@ fun main(args: Array<String>) {
     s.registerWitthEureka()
     s.queryEureka()
 }
+
+
+@RestController
+internal class ServiceInstanceRestController {
+
+    @Autowired
+    val discoveryClient: DiscoveryClient? = null
+
+    @RequestMapping("/service-instances/{applicationName}")
+    fun serviceInstancesByApplicationName(
+            @PathVariable applicationName: String): List<ServiceInstance> {
+        return this.discoveryClient!!.getInstances(applicationName)
+    }
+}
+
 /**
 private class DefaultDataCenterInfo private constructor(val name: Name) : DataCenterInfo {
     companion object {
@@ -30,23 +53,17 @@ class ScheduledClass {
     var eureka_standard_url = "http://localhost:8761"
 
     var json_register = """
-        {
-    "instance": {
-        "hostName": "WKS-SOF-L011",
-        "app": "com.automationrhapsody.eureka.app",
-        "vipAddress": "com.automationrhapsody.eureka.app",
-        "secureVipAddress": "com.automationrhapsody.eureka.app"
-        "ipAddr": "10.0.0.10",
-        "status": "STARTING",
-        "port": {"${'$'}": "8080", "@enabled": "true"},
-        "securePort": {"${'$'}": "8443", "@enabled": "true"},
-        "healthCheckUrl": "http://WKS-SOF-L011:8080/healthcheck",
-        "statusPageUrl": "http://WKS-SOF-L011:8080/status",
-        "homePageUrl": "http://WKS-SOF-L011:8080",
-        "dataCenterInfo": {
-            "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
-            "name": "MyOwn"
-        },
+{
+    "instance":
+    {
+        "hostName":"localhost",
+        "app":"eurekaprometheusbridge",
+        "ipAddr":"localhost",
+        "vipAddress":"1111",
+        "secureVipAddress":"1111",
+        "status":"STARTING",
+        "port": { "${'$'}": 1111, "@enabled": "true" },
+        "dataCenterInfo": { "name": "MyOwn" }
     }
 }
     """.trimIndent()
@@ -66,7 +83,7 @@ class ScheduledClass {
     fun registerWitthEureka() {
         println("Now registering with Eureka")
 
-        put(eureka_standard_url + "/eureka/v2/apps/eurekaprometheusbridge-1234567890",json = json_register)
+        put(eureka_standard_url + "/eureka/v2/apps/eurekaprometheusbridge/1", json = json_register)
     }
 }
 
