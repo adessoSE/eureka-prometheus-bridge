@@ -16,14 +16,12 @@ import org.springframework.web.bind.annotation.RestController
 
 
 @SpringBootApplication
-@EnableDiscoveryClient
 @EnableScheduling
 class EurekaPrometheusBridgeApplication
 
 fun main(args: Array<String>) {
     runApplication<EurekaPrometheusBridgeApplication>(*args)
     var s = ScheduledClass()
-    s.registerWitthEureka()
     s.queryEureka()
 }
 
@@ -41,32 +39,8 @@ internal class ServiceInstanceRestController {
     }
 }
 
-/**
-private class DefaultDataCenterInfo private constructor(val name: Name) : DataCenterInfo {
-    companion object {
-        fun myOwn(): DataCenterInfo {
-            return DefaultDataCenterInfo(Name.MyOwn)
-        }
-    }
-}*/
 class ScheduledClass {
     var eureka_standard_url = "http://localhost:8761"
-
-    var json_register = """
-{
-    "instance":
-    {
-        "hostName":"localhost",
-        "app":"eurekaprometheusbridge",
-        "ipAddr":"localhost",
-        "vipAddress":"1111",
-        "secureVipAddress":"1111",
-        "status":"STARTING",
-        "port": { "${'$'}": 1111, "@enabled": "true" },
-        "dataCenterInfo": { "name": "MyOwn" }
-    }
-}
-    """.trimIndent()
 
     /**Queries Eureka for all App-Data*/
     @Scheduled(fixedRate = 10000)
@@ -80,14 +54,4 @@ class ScheduledClass {
         return true
     }
 
-    fun registerWitthEureka() {
-        println("Now registering with Eureka")
-
-        put(eureka_standard_url + "/eureka/v2/apps/eurekaprometheusbridge/1", json = json_register)
-    }
 }
-
-data class EurekaApp(
-        var id: Long?,
-        var name: String?
-)
