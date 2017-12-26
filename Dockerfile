@@ -1,4 +1,4 @@
-FROM prom/pushgateway
+FROM alpine:latest
 
 # Install OpenJdk 8
 RUN apk --update add openjdk8
@@ -10,4 +10,4 @@ ADD build/libs/eurekapromettheusbridge-0.0.1.jar container/bridge-0.0.1.jar
 #Start Bridge when container starts
 #ENTRYPOINT ["bash","-c","rm -f repo && java -jar container/bridge-0.0.1.jar"]
 
-EXPOSE 9091
+EXPOSE 8080
