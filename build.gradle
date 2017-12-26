@@ -45,7 +45,6 @@ ext {
 
 dependencies {
 	compile("com.github.jkcclemens:khttp:0.1.0")
-	compile('org.springframework.cloud:spring-cloud-starter-eureka')
 	compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
 	compile('org.springframework.boot:spring-boot-starter')
 	compile('org.springframework.boot:spring-boot-starter-web')
@@ -53,7 +52,6 @@ dependencies {
 	compile("org.jetbrains.kotlin:kotlin-reflect")
 	compile("com.fasterxml.jackson.module:jackson-module-kotlin")
 	testCompile('org.springframework.boot:spring-boot-starter-test')
-	testCompile('org.springframework.cloud:spring-cloud-starter-eureka-server')
 }
 
 dependencyManagement {
