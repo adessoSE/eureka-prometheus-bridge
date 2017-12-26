@@ -1,6 +1,9 @@
 package de.adesso.eurekaprometheusbridge
 
+import com.google.gson.JsonArray
 import khttp.get
+import org.json.JSONArray
+import org.json.JSONObject
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -16,6 +19,9 @@ import org.json.XML
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.File
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json
+
+
 
 
 @SpringBootApplication
@@ -55,16 +61,29 @@ class ScheduledClass {
         """.trimMargin())
             println("Status: " + r.statusCode)
             //Convert xml tto JSON
-            val xmlJSONObj = XML.toJSONObject(r.text)
-            val jsonPrettyPrintString = xmlJSONObj.toString(4)
+            val JSONObj = XML.toJSONObject(r.text)
+            val jsonPrettyPrintString = JSONObj.toString(4)
             println(""""
                 ${jsonPrettyPrintString}
                 """)
-            //TODO Scrape Name and URL as ConfigEntry
-            
 
-
-
+            /**
+             *
+             *
+             * ACHTUNG, das Parsing ist noch nicht für mehrere Services gedacht, eine effiziente Library für Kotlin wäre schön
+             * 
+             *
+             */
+            //TODO Lösung für mehrere Services
+            println("Object: " + JSONObj.get("applications"))
+            var name = JSONObj.getJSONObject("applications").getJSONObject("application").get("name")
+            var hostname = JSONObj.getJSONObject("applications").getJSONObject("application").getJSONObject("instance").get("hostName")
+            var port = JSONObj.getJSONObject("applications").getJSONObject("application").getJSONObject("instance").getJSONObject("port").get("content")
+            println("""
+                $name
+                $hostname
+                $port
+            """.trimIndent())
 
             return true
         }
