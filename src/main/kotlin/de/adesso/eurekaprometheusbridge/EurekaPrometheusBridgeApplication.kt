@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.json.XML
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.io.File
 
 
 @SpringBootApplication
@@ -59,7 +60,8 @@ class ScheduledClass {
             println(""""
                 ${jsonPrettyPrintString}
                 """)
-            //TODO Expose on /metrics
+            //TODO Scrape Name and URL as ConfigEntry
+            
 
 
 
@@ -76,10 +78,66 @@ class ScheduledClass {
             """)
         return false
     }
-}
-
-@RestController
-@Component
-class Endpoint {
 
 }
+
+@Service
+class Generator{
+    var basic_config: String = """
+global:
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    evaluation_interval: 15s
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: []
+    scheme: http
+    timeout: 10s
+scrape_configs:
+- job_name: prometheus
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  static_configs:
+  - targets:
+    - localhost:9090
+    """.trimIndent()
+
+    @Value("\${bridge.scrapeinterval}")
+    var scrape_interval = 15
+
+    @Value("\${bridge.scrapetimeout}")
+    var scrape_timeout = 10
+
+    @Value("\${bridge.metricspath}")
+    var metrics_path = "/prometheus"
+
+    @Value("\${bridge.scheme}")
+    var scheme = "http"
+
+    var target: String? = null
+
+    fun generatePrometheusConfig(entries: List<ConfigEntry>){
+        var template = ""
+        for (configEntry in entries){
+            template = """
+                - job_name: ${configEntry.name}
+                    scrape_interval: ${scrape_interval}s
+                    scrape_timeout: ${scrape_timeout}s
+                    metrics_path: $metrics_path
+                    scheme: http
+                    static_configs:
+                        - targets:
+                            - ${configEntry.targeturl}
+                """.trimIndent()
+            template + " " + configEntry;
+        }
+        var file: File = File("src/generated-prometheus-config/prometheus.yml")
+        file.writeText(template)
+    }
+
+}
+
+data class ConfigEntry(val name: String, val targeturl: String)
