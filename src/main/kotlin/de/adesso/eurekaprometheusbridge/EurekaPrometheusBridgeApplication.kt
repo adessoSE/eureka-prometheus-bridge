@@ -59,7 +59,11 @@ class ScheduledClass {
             println(""""
                 ${jsonPrettyPrintString}
                 """)
-            //TODO JSON to Prometheusformat
+            //TODO Expose on /metrics
+
+
+
+
             return true
         }
         println("""
@@ -72,4 +76,10 @@ class ScheduledClass {
             """)
         return false
     }
+}
+
+@RestController
+@Component
+class Endpoint {
+
 }
