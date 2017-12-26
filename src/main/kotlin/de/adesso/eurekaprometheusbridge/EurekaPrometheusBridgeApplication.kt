@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.json.XML
-
-
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
 
 
 @SpringBootApplication
@@ -26,9 +26,14 @@ fun main(args: Array<String>) {
 }
 
 
-@Component
+@Service
 class ScheduledClass {
-    var eureka_standard_url = "http://127.0.0.1:8761"
+
+    @Value("\${bridge.eureka.port}")
+    var eureka_port: String = "8761"
+
+    var eureka_host: String = "http://127.0.0.1:"
+    var eureka_standard_url = eureka_host + eureka_port
 
 
     /**Queries Eureka for all App-Data*/
