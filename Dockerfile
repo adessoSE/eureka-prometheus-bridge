@@ -14,6 +14,6 @@ FROM prom/prometheus:latest
 
 COPY prometheus.yml /etc/prometheus/prometheus.yml
 
-VOLUME prometheus-data
-EXPOSE 9090
+VOLUME /prometheus-data
+EXPOSE 9090:9090
 
