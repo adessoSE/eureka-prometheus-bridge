@@ -1,6 +1,7 @@
 package de.adesso.eurekaprometheusbridge
 
 import khttp.get
+import org.json.JSONObject
 import org.json.XML
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -32,7 +33,7 @@ class ScheduledClass {
 
     /**Queries Eureka for all App-Data*/
     @Scheduled(fixedRate = 10000)
-    fun queryEureka(): Boolean {
+    fun queryEureka(): List<ConfigEntry>? {
         println("""
             |----------------------------------------------|
             |Now querying Eureka                           |
@@ -48,31 +49,35 @@ class ScheduledClass {
         """.trimMargin())
             println("Status: " + r.statusCode)
             //Convert xml tto JSON
-            val JSONObj = XML.toJSONObject(r.text)
-            val jsonPrettyPrintString = JSONObj.toString(4)
+            val JSONObjectFromXML = XML.toJSONObject(r.text)
+            val jsonPrettyPrintString = JSONObjectFromXML.toString(4)
             println(""""
                 ${jsonPrettyPrintString}
                 """)
 
-            /**
-             *
-             *
-             * ACHTUNG, das Parsing ist noch nicht für mehrere Services gedacht, eine effiziente Library für Kotlin wäre schön
-             * 
-             *
-             */
-            //TODO Lösung für mehrere Services
-            println("Object: " + JSONObj.get("applications"))
-            var name = JSONObj.getJSONObject("applications").getJSONObject("application").get("name")
-            var hostname = JSONObj.getJSONObject("applications").getJSONObject("application").getJSONObject("instance").get("hostName")
-            var port = JSONObj.getJSONObject("applications").getJSONObject("application").getJSONObject("instance").getJSONObject("port").get("content")
-            println("""
-                $name
-                $hostname
-                $port
-            """.trimIndent())
 
-            return true
+            //Parse multiple objects
+            var entryList: ArrayList<ConfigEntry> = ArrayList()
+
+            for (o in JSONObjectFromXML.getJSONObject("applications").getJSONArray("application")) {
+                if (o is JSONObject) {
+                    var name = o.get("name")
+                    var hostname = o.getJSONObject("instance").get("hostName")
+                    var port = o.getJSONObject("instance").getJSONObject("port").get("content")
+                    println("""
+                            $name
+                            $hostname
+                            $port
+                            """.trimIndent())
+
+                    entryList.add(ConfigEntry(name = name.toString(), targeturl = (hostname.toString() + ":" + port.toString())))
+                    for (entr in entryList){
+                        println("EntryList")
+                        println(entr.toString())
+                    }
+                }
+            }
+            return entryList
         }
         println("""
             |----------------------------------------------|
@@ -82,7 +87,7 @@ class ScheduledClass {
             Text:
             ${XML.toJSONObject(r.text).toString(4)}
             """)
-        return false
+        return null
     }
 
 }
