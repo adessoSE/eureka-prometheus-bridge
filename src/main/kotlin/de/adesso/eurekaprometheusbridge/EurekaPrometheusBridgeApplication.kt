@@ -2,6 +2,7 @@ package de.adesso.eurekaprometheusbridge
 
 import khttp.get
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import org.json.XML
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,9 +38,6 @@ class ScheduledClass(
         @Value("\${bridge.eureka.host}") var eureka_host: String = "http://127.0.0.1",
         @Value("\${bridge.filePath}")  var generated_file_path: String) {
 
-        var eureka_standard_url = eureka_host + ":" + eureka_port
-
-
     @PostConstruct
     fun init(){
         configRepo.deleteAll()
@@ -48,19 +46,11 @@ class ScheduledClass(
     /**Queries Eureka for all App-Data*/
     @Scheduled(fixedRate = 10000)
     fun queryEureka() {
-        println("""
-            |----------------------------------------------|
-            |Now querying Eureka                           |
-            |----------------------------------------------|
-        """.trimMargin())
-        val r = get(eureka_standard_url + "/eureka/apps/")
+        println("Query Eureka ...")
 
-        if(r.statusCode == 200) {
-            println("""
-            |----------------------------------------------|
-            |Successfully found Eureka-Clients             |
-            |----------------------------------------------|
-        """.trimMargin())
+        val r = get(eureka_host + ":" + eureka_port + "/eureka/apps/")
+        if (r.statusCode == 200) {
+            println("Found Eureka Clients")
             println("Status: " + r.statusCode)
             //Convert xml tto JSON
             val JSONObjectFromXML = XML.toJSONObject(r.text)
@@ -69,79 +59,62 @@ class ScheduledClass(
                 ${jsonPrettyPrintString}
                 """)
 
-            //TODO Check .getJSONArray if Array, otherwise use singlevalue implementation
-            for (o in JSONObjectFromXML.getJSONObject("applications").getJSONArray("application")) {
-                if (o is JSONObject) {
-                    var name = o.get("name")
-                    if(o.getJSONObject("instance") is JSONObject){
+            //Is it one object or an array?
+            var isArray = false
+            try {
+                if (JSONObjectFromXML.getJSONObject("applications").getJSONObject("application") is JSONObject) {
+                    isArray = false
 
-                    }
-                    else if (o.getJSONArray("instance") is JSONArray){
+                }
+            } catch (e: JSONException) {
+                isArray = true
+            }
 
-                    }
-                    var hostname = o.getJSONObject("instance").get("hostName")
-                    var port = o.getJSONObject("instance").getJSONObject("port").get("content")
-                    println("""
-                            |----------------------------------------------|
-                            |Found Properties                              |
-                            |----------------------------------------------|
-                            $name
-                            $hostname
-                            $port
-                            |----------------------------------------------|
-                            |Saving ConfigEntry                            |
-                            |----------------------------------------------|
+            if (!isArray) {
+                var name = JSONObjectFromXML.getJSONObject("applications").getJSONObject("application").get("name")
+                var hostname = JSONObjectFromXML.getJSONObject("applications").getJSONObject("application").getJSONObject("instance").get("hostName")
+                var port = JSONObjectFromXML.getJSONObject("applications").getJSONObject("application").getJSONObject("instance").getJSONObject("port").get("content")
+                var targeturl = (hostname.toString() + ":" + port.toString())
+                println("""Found property
+                Name: $name
+                Targeturl: $targeturl
+                """.trimIndent())
+            }
+            if(isArray){
+                for (o in JSONObjectFromXML.getJSONObject("applications").getJSONArray("application")) {
+                    println("Found multiple Objects")
+                    if (o is JSONObject) {
+
+                        var name = o.get("name")
+                        var hostname = o.getJSONObject("instance").get("hostName")
+                        var port = o.getJSONObject("instance").getJSONObject("port").get("content")
+                        var targeturl = (hostname.toString() + ":" + port.toString())
+
+                        println(""" Found Properties
+                           Name: $name
+                           Targeturl: $targeturl
                             """.trimIndent())
-
-
-                    var targeturl = (hostname.toString() + ":" + port.toString())
-
-                    /**var configEntryList = configRepo.findByTargeturl(targeturl)
-
-                    var targetList: ArrayList<String> = ArrayList()
-                    for(entry in configEntryList){
-                        targetList.add(entry.targeturl)
-                    }*/
-
-
 
                         var nameFound = !configRepo.findByName(name.toString()).isEmpty()
                         var urlFound = !configRepo.findByTargeturl(targeturl).isEmpty()
-
-
-                        if(!nameFound && !urlFound){
+                        if (!nameFound && !urlFound) {
                             configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
                             continue
-                        }
-                        else if(nameFound && !urlFound){
+                        } else if (nameFound && !urlFound) {
                             configRepo.deleteByName(name.toString())
                             configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
                             continue
-                        }
-                        else if(!nameFound && urlFound){
+                        } else if (!nameFound && urlFound) {
                             configRepo.deleteByTargeturl(targeturl)
                             configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
                             continue
                         }
-
-                    /**if(!targetList.contains(targeturl)) {
-                        configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
-                    }*/
-
-                        /**
-                    entryList.add(ConfigEntry(name = name.toString(), targeturl = (hostname.toString() + ":" + port.toString())))
-                    for (entr in entryList){
-                        println("EntryList")
-                        println(entr.toString())
-                    }*/
+                    }
                 }
             }
         }
         else {
-            println("""
-            |----------------------------------------------|
-            |No Eureka-Clients found                       |
-            |----------------------------------------------|
+            println("""No Eureka-Clients found
             Status: ${r.statusCode}
             Text:
             ${XML.toJSONObject(r.text).toString(4)}
@@ -152,18 +125,10 @@ class ScheduledClass(
     /**Attempts to generate a new Config-File*/
     @Scheduled(fixedRate = 10000, initialDelay = 5000)
     fun generateConfigFile() {
-        println("""
-            |----------------------------------------------|
-            |Generate ConfigFile                           |
-            |----------------------------------------------|
-            """.trimIndent())
+        println("Generate Config File ...")
 
         var gen = Generator()
-        println("""
-            |----------------------------------------------|
-            |ConfigRepo Findall                           |
-            |----------------------------------------------|
-            """.trimIndent())
+        println("All Configs:")
         for(e in configRepo.findAll()){
             println(e.toString())
         }
