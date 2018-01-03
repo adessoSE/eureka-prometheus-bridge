@@ -1,7 +1,7 @@
 package de.adesso.eurekaprometheusbridge
 
 import khttp.get
-import org.hibernate.annotations.CreationTimestamp
+import org.json.JSONArray
 import org.json.JSONObject
 import org.json.XML
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,11 +16,8 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Controller
 import org.springframework.stereotype.Service
 import java.io.File
-import java.time.LocalDateTime
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.PostLoad
+import javax.annotation.PostConstruct
+import javax.persistence.*
 
 
 @SpringBootApplication
@@ -38,9 +35,15 @@ class ScheduledClass(
         @Autowired var configRepo: ConfigEntryRepository,
         @Value("\${bridge.eureka.port}") var eureka_port: String = "8761",
         @Value("\${bridge.eureka.host}") var eureka_host: String = "http://127.0.0.1",
-        @Value("\${bridge.filePath}")  var generatedFilePath: String) {
+        @Value("\${bridge.filePath}")  var generated_file_path: String) {
 
         var eureka_standard_url = eureka_host + ":" + eureka_port
+
+
+    @PostConstruct
+    fun init(){
+        configRepo.deleteAll()
+    }
 
     /**Queries Eureka for all App-Data*/
     @Scheduled(fixedRate = 10000)
@@ -70,6 +73,12 @@ class ScheduledClass(
             for (o in JSONObjectFromXML.getJSONObject("applications").getJSONArray("application")) {
                 if (o is JSONObject) {
                     var name = o.get("name")
+                    if(o.getJSONObject("instance") is JSONObject){
+
+                    }
+                    else if (o.getJSONArray("instance") is JSONArray){
+
+                    }
                     var hostname = o.getJSONObject("instance").get("hostName")
                     var port = o.getJSONObject("instance").getJSONObject("port").get("content")
                     println("""
@@ -84,17 +93,40 @@ class ScheduledClass(
                             |----------------------------------------------|
                             """.trimIndent())
 
+
                     var targeturl = (hostname.toString() + ":" + port.toString())
-                    var configEntryList = configRepo.findByTargeturl(targeturl)
+
+                    /**var configEntryList = configRepo.findByTargeturl(targeturl)
 
                     var targetList: ArrayList<String> = ArrayList()
                     for(entry in configEntryList){
                         targetList.add(entry.targeturl)
-                    }
+                    }*/
 
-                    if(!targetList.contains(targeturl)) {
+
+
+                        var nameFound = !configRepo.findByName(name.toString()).isEmpty()
+                        var urlFound = !configRepo.findByTargeturl(targeturl).isEmpty()
+
+
+                        if(!nameFound && !urlFound){
+                            configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
+                            continue
+                        }
+                        else if(nameFound && !urlFound){
+                            configRepo.deleteByName(name.toString())
+                            configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
+                            continue
+                        }
+                        else if(!nameFound && urlFound){
+                            configRepo.deleteByTargeturl(targeturl)
+                            configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
+                            continue
+                        }
+
+                    /**if(!targetList.contains(targeturl)) {
                         configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
-                    }
+                    }*/
 
                         /**
                     entryList.add(ConfigEntry(name = name.toString(), targeturl = (hostname.toString() + ":" + port.toString())))
@@ -117,8 +149,8 @@ class ScheduledClass(
         }
     }
 
-    /**Attempts to genrate a new Config-File*/
-    @Scheduled(fixedRate = 10000)
+    /**Attempts to generate a new Config-File*/
+    @Scheduled(fixedRate = 10000, initialDelay = 5000)
     fun generateConfigFile() {
         println("""
             |----------------------------------------------|
@@ -135,7 +167,7 @@ class ScheduledClass(
         for(e in configRepo.findAll()){
             println(e.toString())
         }
-        gen.generatePrometheusConfig(configRepo.findAll(), generatedFilePath)
+        gen.generatePrometheusConfig(configRepo.findAll(), generated_file_path)
     }
 
 }
@@ -208,6 +240,9 @@ interface ConfigEntryRepository : JpaRepository <ConfigEntry,Long> {
 
     override fun findAll(sort: Sort?): MutableList<ConfigEntry>
     fun findByTargeturl(targeturl: String): List<ConfigEntry>
+    fun findByName(name: String): List<ConfigEntry>
+    fun deleteByName(name: String)
+    fun deleteByTargeturl(targeturl: String)
 }
 
 
