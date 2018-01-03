@@ -1,19 +1,31 @@
 package de.adesso.eurekaprometheusbridge
 
 import khttp.get
+import org.hibernate.annotations.CreationTimestamp
 import org.json.JSONObject
 import org.json.XML
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.stereotype.Controller
 import org.springframework.stereotype.Service
 import java.io.File
+import java.time.LocalDateTime
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.PostLoad
 
 
 @SpringBootApplication
 @EnableScheduling
+@EnableAutoConfiguration
 class EurekaPrometheusBridgeApplication
 
 fun main(args: Array<String>) {
@@ -22,18 +34,17 @@ fun main(args: Array<String>) {
 
 
 @Service
-class ScheduledClass {
+class ScheduledClass(
+        @Autowired var configRepo: ConfigEntryRepository,
+        @Value("\${bridge.eureka.port}") var eureka_port: String = "8761",
+        @Value("\${bridge.eureka.host}") var eureka_host: String = "http://127.0.0.1",
+        @Value("\${bridge.filePath}")  var generatedFilePath: String) {
 
-    @Value("\${bridge.eureka.port}")
-    var eureka_port: String = "8761"
-
-    var eureka_host: String = "http://127.0.0.1:"
-    var eureka_standard_url = eureka_host + eureka_port
-
+        var eureka_standard_url = eureka_host + ":" + eureka_port
 
     /**Queries Eureka for all App-Data*/
     @Scheduled(fixedRate = 10000)
-    fun queryEureka(): List<ConfigEntry>? {
+    fun queryEureka() {
         println("""
             |----------------------------------------------|
             |Now querying Eureka                           |
@@ -55,31 +66,47 @@ class ScheduledClass {
                 ${jsonPrettyPrintString}
                 """)
 
-
-            //Parse multiple objects
-            var entryList: ArrayList<ConfigEntry> = ArrayList()
-
+            //TODO Check .getJSONArray if Array, otherwise use singlevalue implementation
             for (o in JSONObjectFromXML.getJSONObject("applications").getJSONArray("application")) {
                 if (o is JSONObject) {
                     var name = o.get("name")
                     var hostname = o.getJSONObject("instance").get("hostName")
                     var port = o.getJSONObject("instance").getJSONObject("port").get("content")
                     println("""
+                            |----------------------------------------------|
+                            |Found Properties                              |
+                            |----------------------------------------------|
                             $name
                             $hostname
                             $port
+                            |----------------------------------------------|
+                            |Saving ConfigEntry                            |
+                            |----------------------------------------------|
                             """.trimIndent())
 
+                    var targeturl = (hostname.toString() + ":" + port.toString())
+                    var configEntryList = configRepo.findByTargeturl(targeturl)
+
+                    var targetList: ArrayList<String> = ArrayList()
+                    for(entry in configEntryList){
+                        targetList.add(entry.targeturl)
+                    }
+
+                    if(!targetList.contains(targeturl)) {
+                        configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
+                    }
+
+                        /**
                     entryList.add(ConfigEntry(name = name.toString(), targeturl = (hostname.toString() + ":" + port.toString())))
                     for (entr in entryList){
                         println("EntryList")
                         println(entr.toString())
-                    }
+                    }*/
                 }
             }
-            return entryList
         }
-        println("""
+        else {
+            println("""
             |----------------------------------------------|
             |No Eureka-Clients found                       |
             |----------------------------------------------|
@@ -87,13 +114,39 @@ class ScheduledClass {
             Text:
             ${XML.toJSONObject(r.text).toString(4)}
             """)
-        return null
+        }
+    }
+
+    /**Attempts to genrate a new Config-File*/
+    @Scheduled(fixedRate = 10000)
+    fun generateConfigFile() {
+        println("""
+            |----------------------------------------------|
+            |Generate ConfigFile                           |
+            |----------------------------------------------|
+            """.trimIndent())
+
+        var gen = Generator()
+        println("""
+            |----------------------------------------------|
+            |ConfigRepo Findall                           |
+            |----------------------------------------------|
+            """.trimIndent())
+        for(e in configRepo.findAll()){
+            println(e.toString())
+        }
+        gen.generatePrometheusConfig(configRepo.findAll(), generatedFilePath)
     }
 
 }
 
 @Service
-class Generator{
+class Generator(
+        @Value("\${bridge.scrapeinterval}") var scrape_interval: Int = 15,
+        @Value("\${bridge.scrapetimeout}") var scrape_timeout: Int = 10,
+        @Value("\${bridge.metricspath}") var metrics_path: String = "/prometheus",
+        @Value("\${bridge.scheme}") var scheme: String = "http"){
+
     var basic_config: String = """
 global:
     scrape_interval: 15s
@@ -116,39 +169,46 @@ scrape_configs:
     - localhost:9090
     """.trimIndent()
 
-    @Value("\${bridge.scrapeinterval}")
-    var scrape_interval = 15
-
-    @Value("\${bridge.scrapetimeout}")
-    var scrape_timeout = 10
-
-    @Value("\${bridge.metricspath}")
-    var metrics_path = "/prometheus"
-
-    @Value("\${bridge.scheme}")
-    var scheme = "http"
-
-    var target: String? = null
-
-    fun generatePrometheusConfig(entries: List<ConfigEntry>){
-        var template = ""
+    fun generatePrometheusConfig(entries: List<ConfigEntry>, generatedFilePath: String) {
+        var template = basic_config
         for (configEntry in entries){
-            template = """
-                - job_name: ${configEntry.name}
-                    scrape_interval: ${scrape_interval}s
-                    scrape_timeout: ${scrape_timeout}s
-                    metrics_path: $metrics_path
-                    scheme: http
-                    static_configs:
-                        - targets:
-                            - ${configEntry.targeturl}
+            var entry = """
+- job_name: ${configEntry.name}
+  scrape_interval: ${scrape_interval}s
+  scrape_timeout: ${scrape_timeout}s
+  metrics_path: ${metrics_path}
+  scheme: http
+  static_configs:
+  - targets:
+    - ${configEntry.targeturl}
                 """.trimIndent()
-            template + " " + configEntry;
+            template += "\n" + entry;
         }
-        var file: File = File("src/generated-prometheus-config/prometheus.yml")
+        var file: File = File(generatedFilePath + "prometheus.yml")
         file.writeText(template)
     }
 
 }
 
-data class ConfigEntry(val name: String, val targeturl: String)
+@Entity
+data class ConfigEntry(
+        @Id @GeneratedValue var id: Long? = null,
+        val name: String = "",
+        val targeturl: String = ""){
+
+}
+
+@Controller
+class ConfigEntryController(
+        @Autowired val repo: ConfigEntryRepository) {
+
+}
+
+interface ConfigEntryRepository : JpaRepository <ConfigEntry,Long> {
+
+    override fun findAll(sort: Sort?): MutableList<ConfigEntry>
+    fun findByTargeturl(targeturl: String): List<ConfigEntry>
+}
+
+
+

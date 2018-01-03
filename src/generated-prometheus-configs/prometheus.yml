@@ -1,0 +1,43 @@
+global:
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    evaluation_interval: 15s
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: []
+    scheme: http
+    timeout: 10s
+scrape_configs:
+- job_name: prometheus
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  static_configs:
+  - targets:
+    - localhost:9090
+- job_name: HYSTRIX-SERVICE
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /prometheus
+  scheme: http
+  static_configs:
+  - targets:
+    - de-adn-fmr8m12.adesso.local:8282
+- job_name: TEST-SERVICE
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /prometheus
+  scheme: http
+  static_configs:
+  - targets:
+    - de-adn-fmr8m12.adesso.local:1234
+- job_name: GATEWAY-SERVICE
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /prometheus
+  scheme: http
+  static_configs:
+  - targets:
+    - de-adn-fmr8m12.adesso.local:8181
