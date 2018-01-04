@@ -17,3 +17,27 @@ scrape_configs:
   static_configs:
   - targets:
     - localhost:9090
+- job_name: GATEWAY-SERVICE
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /prometheus
+  scheme: http
+  static_configs:
+  - targets:
+    - DESKTOP-QBD9NV6.local:8181
+- job_name: TEST-SERVICE
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /prometheus
+  scheme: http
+  static_configs:
+  - targets:
+    - DESKTOP-QBD9NV6.local:1234
+- job_name: CONFIG-SERVICE
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /prometheus
+  scheme: http
+  static_configs:
+  - targets:
+    - localhost:8888

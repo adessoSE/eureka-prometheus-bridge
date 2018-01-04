@@ -1,7 +1,7 @@
 package de.adesso.eurekaprometheusbridge
 
 import khttp.get
-import org.json.JSONArray
+import khttp.responses.Response
 import org.json.JSONException
 import org.json.JSONObject
 import org.json.XML
@@ -14,11 +14,12 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Controller
 import org.springframework.stereotype.Service
 import java.io.File
 import javax.annotation.PostConstruct
-import javax.persistence.*
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
 
 
 @SpringBootApplication
@@ -34,12 +35,12 @@ fun main(args: Array<String>) {
 @Service
 class ScheduledClass(
         @Autowired var configRepo: ConfigEntryRepository,
-        @Value("\${bridge.eureka.port}") var eureka_port: String = "8761",
-        @Value("\${bridge.eureka.host}") var eureka_host: String = "http://127.0.0.1",
-        @Value("\${bridge.filePath}")  var generated_file_path: String) {
+        @Value("\${bridge.eureka.port}") var eureka_port: String,
+        @Value("\${bridge.eureka.host}") var eureka_host: String,
+        @Value("\${bridge.filePath}") var generated_file_path: String) {
 
     @PostConstruct
-    fun init(){
+    fun init() {
         configRepo.deleteAll()
     }
 
@@ -47,10 +48,15 @@ class ScheduledClass(
     @Scheduled(fixedRate = 10000)
     fun queryEureka() {
         println("Query Eureka ...")
-
-        val r = get(eureka_host + ":" + eureka_port + "/eureka/apps/")
+        var r: Response?
+        try {
+            r = get(eureka_host + ":" + eureka_port + "/eureka/apps/")
+        } catch (e: Exception) {
+            println("Requesting Eureka failed!... Trying again in some time.")
+            return
+        }
         if (r.statusCode == 200) {
-            println("Found Eureka Clients")
+            println("Found Eureka")
             println("Status: " + r.statusCode)
             //Convert xml tto JSON
             val JSONObjectFromXML = XML.toJSONObject(r.text)
@@ -58,6 +64,11 @@ class ScheduledClass(
             println(""""
                 ${jsonPrettyPrintString}
                 """)
+            //If JSON is too short no app is registered
+            if(JSONObjectFromXML.toString().length < 60){
+                println("JSON too short, no app registered with eureka.")
+            return
+            }
 
             //Is it one object or an array?
             var isArray = false
@@ -80,9 +91,9 @@ class ScheduledClass(
                 Targeturl: $targeturl
                 """.trimIndent())
             }
-            if(isArray){
+            else if (isArray) {
+                println("Found multiple Objects:")
                 for (o in JSONObjectFromXML.getJSONObject("applications").getJSONArray("application")) {
-                    println("Found multiple Objects")
                     if (o is JSONObject) {
 
                         var name = o.get("name")
@@ -90,9 +101,7 @@ class ScheduledClass(
                         var port = o.getJSONObject("instance").getJSONObject("port").get("content")
                         var targeturl = (hostname.toString() + ":" + port.toString())
 
-                        println(""" Found Properties
-                           Name: $name
-                           Targeturl: $targeturl
+                        println(""" Found Service: $name with targeturl: $targeturl
                             """.trimIndent())
 
                         var nameFound = !configRepo.findByName(name.toString()).isEmpty()
@@ -112,8 +121,7 @@ class ScheduledClass(
                     }
                 }
             }
-        }
-        else {
+        } else {
             println("""No Eureka-Clients found
             Status: ${r.statusCode}
             Text:
@@ -128,8 +136,8 @@ class ScheduledClass(
         println("Generate Config File ...")
 
         var gen = Generator()
-        println("All Configs:")
-        for(e in configRepo.findAll()){
+        println("All Entries in Database:")
+        for (e in configRepo.findAll()) {
             println(e.toString())
         }
         gen.generatePrometheusConfig(configRepo.findAll(), generated_file_path)
@@ -142,7 +150,7 @@ class Generator(
         @Value("\${bridge.scrapeinterval}") var scrape_interval: Int = 15,
         @Value("\${bridge.scrapetimeout}") var scrape_timeout: Int = 10,
         @Value("\${bridge.metricspath}") var metrics_path: String = "/prometheus",
-        @Value("\${bridge.scheme}") var scheme: String = "http"){
+        @Value("\${bridge.scheme}") var scheme: String = "http") {
 
     var basic_config: String = """
 global:
@@ -168,7 +176,7 @@ scrape_configs:
 
     fun generatePrometheusConfig(entries: List<ConfigEntry>, generatedFilePath: String) {
         var template = basic_config
-        for (configEntry in entries){
+        for (configEntry in entries) {
             var entry = """
 - job_name: ${configEntry.name}
   scrape_interval: ${scrape_interval}s
@@ -191,18 +199,10 @@ scrape_configs:
 data class ConfigEntry(
         @Id @GeneratedValue var id: Long? = null,
         val name: String = "",
-        val targeturl: String = ""){
-
+        val targeturl: String = "") {
 }
 
-@Controller
-class ConfigEntryController(
-        @Autowired val repo: ConfigEntryRepository) {
-
-}
-
-interface ConfigEntryRepository : JpaRepository <ConfigEntry,Long> {
-
+interface ConfigEntryRepository : JpaRepository<ConfigEntry, Long> {
     override fun findAll(sort: Sort?): MutableList<ConfigEntry>
     fun findByTargeturl(targeturl: String): List<ConfigEntry>
     fun findByName(name: String): List<ConfigEntry>
