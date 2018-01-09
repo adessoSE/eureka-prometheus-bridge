@@ -14,9 +14,11 @@ import javax.annotation.PostConstruct
 
 @Service
 class ScheduledJobs(
+        @Autowired var gen: Generator,
         @Autowired var configRepo: ConfigEntryRepository,
         @Value("\${bridge.eureka.port}") var eureka_port: String,
         @Value("\${bridge.eureka.host}") var eureka_host: String,
+        @Value("\${bridge.eureka.apipath}") var eureka_api_path: String,
         @Value("\${bridge.show.eurekajson}") var show_eureka_json: Boolean
         ) {
 
@@ -35,7 +37,7 @@ class ScheduledJobs(
         log.info("Query Eureka ...")
         var r: Response?
         try {
-            r = get(eureka_host + ":" + eureka_port + "/eureka/apps/")
+            r = get(eureka_host + ":" + eureka_port + eureka_api_path)
         } catch (e: Exception) {
             log.info("Requesting Eureka failed!... Trying again in some time.")
             return
@@ -47,7 +49,7 @@ class ScheduledJobs(
             val JSONObjectFromXML = XML.toJSONObject(r.text)
             if(show_eureka_json) {
                 val jsonPrettyPrintString = JSONObjectFromXML.toString(4)
-                println(""""
+                log.info(""""
                 ${jsonPrettyPrintString}
                 """)
             }
@@ -122,10 +124,9 @@ class ScheduledJobs(
     fun generateConfigFile() {
         log.info("Generating Config File ...")
 
-        var gen = Generator()
         log.info("All Entries in Database:")
         for (e in configRepo.findAll()) {
-            println(e.toString())
+            log.info(e.toString())
         }
         gen.generatePrometheusConfig(configRepo.findAll())
     }
