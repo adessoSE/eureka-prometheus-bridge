@@ -1,5 +1,6 @@
 package de.adesso.eurekaprometheusbridge
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.File
@@ -10,6 +11,11 @@ class Generator(
         @Value("\${bridge.scrapetimeout}") var scrape_timeout: Int = 10,
         @Value("\${bridge.metricspath}") var metrics_path: String = "/prometheus",
         @Value("\${bridge.scheme}") var scheme: String = "http") {
+
+    companion object {
+        //With using a companion object the logger isnt created for each class instance, this is for best pratice purposes
+        val log = LoggerFactory.getLogger(Generator::class.java.name)
+    }
 
     var basic_config: String = """
 global:
@@ -50,7 +56,7 @@ scrape_configs:
         }
         var file = File(generatedFilePath + "prometheus.yml")
         file.writeText(template)
-        println("Config generated!")
+        log.info("Config generated!")
     }
 
 }
