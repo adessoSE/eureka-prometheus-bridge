@@ -10,30 +10,27 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import javax.annotation.PostConstruct
 
 @Service
 class ScheduledJobs(
         @Autowired var gen: Generator,
-        @Autowired var configRepo: ConfigEntryRepository,
         @Value("\${bridge.eureka.port}") var eureka_port: String,
         @Value("\${bridge.eureka.host}") var eureka_host: String,
         @Value("\${bridge.eureka.apipath}") var eureka_api_path: String,
         @Value("\${bridge.show.eurekajson}") var show_eureka_json: Boolean
-        ) {
+) {
 
     companion object {
         val log = LoggerFactory.getLogger(ScheduledJobs::class.java.name)
     }
 
-    @PostConstruct
-    fun init() {
-        configRepo.deleteAll()
-    }
+    var configEntries = ArrayList<ConfigEntry>()
 
     /**Queries Eureka for all App-Data*/
     @Scheduled(fixedRate = 10000)
     fun queryEureka() {
+        configEntries.clear()
+
         log.info("Query Eureka ...")
         var r: Response?
         try {
@@ -47,18 +44,17 @@ class ScheduledJobs(
             log.info("Status: " + r.statusCode)
             //Convert xml tto JSON
             val JSONObjectFromXML = XML.toJSONObject(r.text)
-            if(show_eureka_json) {
+            if (show_eureka_json) {
                 val jsonPrettyPrintString = JSONObjectFromXML.toString(4)
                 log.info(""""
                 ${jsonPrettyPrintString}
                 """)
             }
             //If JSON is too short no app is registered
-            if(JSONObjectFromXML.toString().length < 60){
+            if (JSONObjectFromXML.toString().length < 60) {
                 log.error("JSON too short, no app registered with eureka.")
-            return
+                return
             }
-
             //Is it one object or an array?
             var isArray = false
             try {
@@ -69,42 +65,24 @@ class ScheduledJobs(
             } catch (e: JSONException) {
                 isArray = true
             }
-
             if (!isArray) {
-                var name = JSONObjectFromXML.getJSONObject("applications").getJSONObject("application").get("name")
+                var name = JSONObjectFromXML.getJSONObject("applications").getJSONObject("application").get("name").toString()
                 var hostname = JSONObjectFromXML.getJSONObject("applications").getJSONObject("application").getJSONObject("instance").get("hostName")
                 var port = JSONObjectFromXML.getJSONObject("applications").getJSONObject("application").getJSONObject("instance").getJSONObject("port").get("content")
                 var targeturl = (hostname.toString() + ":" + port.toString())
-                log.info("""Found property: $name with targeturl: $targeturl
-                """.trimIndent())
-            }
-            else if (isArray) {
+                log.info("Found property: $name with targeturl: $targeturl")
+                configEntries.add(ConfigEntry(name = name, targeturl = targeturl))
+            } else if (isArray) {
                 log.info("Found multiple Objects:")
                 for (o in JSONObjectFromXML.getJSONObject("applications").getJSONArray("application")) {
                     if (o is JSONObject) {
-
-                        var name = o.get("name")
+                        var name = o.get("name").toString()
                         var hostname = o.getJSONObject("instance").get("hostName")
                         var port = o.getJSONObject("instance").getJSONObject("port").get("content")
                         var targeturl = (hostname.toString() + ":" + port.toString())
-
                         log.info(""" Found Service: $name with targeturl: $targeturl
                             """.trimIndent())
-
-                        var nameFound = !configRepo.findByName(name.toString()).isEmpty()
-                        var urlFound = !configRepo.findByTargeturl(targeturl).isEmpty()
-                        if (!nameFound && !urlFound) {
-                            configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
-                            continue
-                        } else if (nameFound && !urlFound) {
-                            configRepo.deleteByName(name.toString())
-                            configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
-                            continue
-                        } else if (!nameFound && urlFound) {
-                            configRepo.deleteByTargeturl(targeturl)
-                            configRepo.save(ConfigEntry(name = name.toString(), targeturl = targeturl))
-                            continue
-                        }
+                        configEntries.add(ConfigEntry(name = name, targeturl = targeturl))
                     }
                 }
             }
@@ -123,10 +101,10 @@ class ScheduledJobs(
         log.info("Generating Config File ...")
 
         log.info("All Entries in Database:")
-        for (e in configRepo.findAll()) {
+        for (e in configEntries) {
             log.info(e.toString())
         }
-        gen.generatePrometheusConfig(configRepo.findAll())
+        gen.generatePrometheusConfig(configEntries)
     }
 
 }
