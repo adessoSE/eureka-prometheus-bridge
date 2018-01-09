@@ -75,9 +75,7 @@ class ScheduledJobs(
                 var hostname = JSONObjectFromXML.getJSONObject("applications").getJSONObject("application").getJSONObject("instance").get("hostName")
                 var port = JSONObjectFromXML.getJSONObject("applications").getJSONObject("application").getJSONObject("instance").getJSONObject("port").get("content")
                 var targeturl = (hostname.toString() + ":" + port.toString())
-                log.info("""Found property
-                Name: $name
-                Targeturl: $targeturl
+                log.info("""Found property: $name with targeturl: $targeturl
                 """.trimIndent())
             }
             else if (isArray) {
