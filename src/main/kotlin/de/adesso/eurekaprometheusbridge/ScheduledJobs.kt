@@ -81,7 +81,7 @@ class ScheduledJobs(
                 """.trimIndent())
             }
             else if (isArray) {
-                println("Found multiple Objects:")
+                log.info("Found multiple Objects:")
                 for (o in JSONObjectFromXML.getJSONObject("applications").getJSONArray("application")) {
                     if (o is JSONObject) {
 
