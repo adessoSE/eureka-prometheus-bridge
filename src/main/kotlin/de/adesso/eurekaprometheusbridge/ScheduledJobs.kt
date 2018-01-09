@@ -128,7 +128,7 @@ class ScheduledJobs(
         for (e in configRepo.findAll()) {
             println(e.toString())
         }
-        gen.generatePrometheusConfig(configRepo.findAll(), generated_file_path)
+        gen.generatePrometheusConfig(configRepo.findAll())
     }
 
 }
