@@ -17,30 +17,8 @@ class Generator(
         val log = LoggerFactory.getLogger(Generator::class.java.name)
     }
 
-    var basic_config: String = """
-global:
-    scrape_interval: 15s
-    scrape_timeout: 10s
-    evaluation_interval: 15s
-alerting:
-  alertmanagers:
-  - static_configs:
-    - targets: []
-    scheme: http
-    timeout: 10s
-scrape_configs:
-- job_name: prometheus
-  scrape_interval: 15s
-  scrape_timeout: 10s
-  metrics_path: /metrics
-  scheme: http
-  static_configs:
-  - targets:
-    - localhost:9090
-    """.trimIndent()
-
     fun generatePrometheusConfig(entries: List<ConfigEntry>, generatedFilePath: String) {
-        var template = basic_config
+        var template = File("src/main/resources/prometheus-basic.yml").readText()
         for (configEntry in entries) {
             var entry = """
 - job_name: ${configEntry.name}

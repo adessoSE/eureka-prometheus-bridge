@@ -1,7 +1,7 @@
 ## Testing Application ---------------------------------------------- "
 # note: run gradlew build" before executing this
 
-## Note this proved to be not making sense, because ports cant be dynamically openeed while the container is running.
+## Note this proved to be not making sense, because ports cant be dynamically opened while the container is running.
 
 #FROM alpine:latest
 #RUN apk --update add openjdk8

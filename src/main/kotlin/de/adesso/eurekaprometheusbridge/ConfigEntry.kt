@@ -8,5 +8,4 @@ import javax.persistence.Id
 data class ConfigEntry(
         @Id @GeneratedValue var id: Long? = null,
         val name: String = "",
-        val targeturl: String = "") {
-}
+        val targeturl: String = "")
