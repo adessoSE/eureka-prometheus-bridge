@@ -17,7 +17,6 @@ class ScheduledJobs(
         @Autowired var configRepo: ConfigEntryRepository,
         @Value("\${bridge.eureka.port}") var eureka_port: String,
         @Value("\${bridge.eureka.host}") var eureka_host: String,
-        @Value("\${bridge.filePath}") var generated_file_path: String,
         @Value("\${bridge.show.eurekajson}") var show_eureka_json: Boolean
         ) {
 

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 import java.io.File
 
 @Service
-class Generator() {
+class Generator {
     @Value("\${bridge.scrapeinterval}")
     var scrape_interval: Int = 15
     @Value("\${bridge.scrapetimeout}")
