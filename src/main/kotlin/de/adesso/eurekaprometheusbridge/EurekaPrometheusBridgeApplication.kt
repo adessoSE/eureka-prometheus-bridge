@@ -8,7 +8,6 @@ import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication
 @EnableScheduling
-@EnableAutoConfiguration
 class EurekaPrometheusBridgeApplication
 
 fun main(args: Array<String>) {
