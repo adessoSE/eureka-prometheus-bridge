@@ -82,6 +82,13 @@ class ScheduledJobs(
                     }
                 }
             }
+            log.info("Generating Config File ...")
+
+            log.info("All Entries in Database:")
+            for (e in configEntries) {
+                log.info(e.toString())
+            }
+            gen.generatePrometheusConfig(configEntries)
         } else {
             log.error("""No Eureka-Clients found
             Status: ${r.statusCode}
@@ -89,18 +96,7 @@ class ScheduledJobs(
             ${XML.toJSONObject(r.text).toString(4)}
             """)
         }
+
+
     }
-
-    /**Attempts to generate a new Config-File*/
-    @Scheduled(fixedRate = 10000, initialDelay = 5000)
-    fun generateConfigFile() {
-        log.info("Generating Config File ...")
-
-        log.info("All Entries in Database:")
-        for (e in configEntries) {
-            log.info(e.toString())
-        }
-        gen.generatePrometheusConfig(configEntries)
-    }
-
 }
