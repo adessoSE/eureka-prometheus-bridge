@@ -7,17 +7,13 @@ import org.json.JSONObject
 import org.json.XML
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 @Service
 class ScheduledJobs(
         @Autowired var gen: Generator,
-        @Value("\${bridge.eureka.port}") var eureka_port: String,
-        @Value("\${bridge.eureka.host}") var eureka_host: String,
-        @Value("\${bridge.eureka.apipath}") var eureka_api_path: String,
-        @Value("\${bridge.show.eurekajson}") var show_eureka_json: Boolean
+        @Autowired var eureka: EurekaProperties
 ) {
 
     companion object {
@@ -34,7 +30,7 @@ class ScheduledJobs(
         log.info("Query Eureka ...")
         var r: Response?
         try {
-            r = get(eureka_host + ":" + eureka_port + eureka_api_path)
+            r = get(eureka.host + ":" + eureka.port + eureka.apiPath)
         } catch (e: Exception) {
             log.info("Requesting Eureka failed!... Trying again in some time.")
             return
@@ -44,7 +40,7 @@ class ScheduledJobs(
             log.info("Status: " + r.statusCode)
             //Convert xml tto JSON
             val JSONObjectFromXML = XML.toJSONObject(r.text)
-            if (show_eureka_json) {
+            if (eureka.showJson) {
                 val jsonPrettyPrintString = JSONObjectFromXML.toString(4)
                 log.info(""""
                 ${jsonPrettyPrintString}
