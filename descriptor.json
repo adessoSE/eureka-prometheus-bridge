@@ -1,7 +1,7 @@
 {
   "package": {
     "name": "eureka-prometheus-bridge",
-    "repo": "maven",
+    "repo": "eureka-prometheus-bridge",
     "subject": "silasmahler",
     "desc": "Eureka Prometheus Bridge",
     "website_url": "https://www.adesso.de",
