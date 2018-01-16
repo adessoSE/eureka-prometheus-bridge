@@ -1,0 +1,25 @@
+{
+  "package": {
+    "name": "eureka-prometheus-bridge",
+    "repo": "maven",
+    "subject": "adesso-ag",
+    "desc": "Eureka Prometheus Bridge",
+    "website_url": "https://www.adesso.de",
+    "issue_tracker_url": "https://github.com/adessoAG/eureka-prometheus-bridge/issues",
+    "vcs_url": "https://github.com/adessoAG/eureka-prometheus-bridge.git",
+    "licenses": ["MIT"],
+    "labels": ["kotlin", "bintray", "gradle"],
+    "public_download_numbers": false,
+    "public_stats": false
+  },
+  "version": {
+    "name": "0.0.1",
+    "released": "2018-01-16",
+    "gpgSign": false
+  },
+  "files":
+  [
+    {"includePattern": "build/libs/(.*)", "uploadPattern": "de/adesso/eureka-prometheus-bridge/0.0.1/$1"}
+  ],
+  "publish": true
+}
