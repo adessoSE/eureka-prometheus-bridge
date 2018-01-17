@@ -30,6 +30,11 @@ bridge.prometheus.configFileTemplatePath=src/main/resources/prometheus-basic.yml
 1. In the project_dir use `gradlew build`
 2. Run the jar under `.\build\libs\eureka-prometheus-bridge-0.0.1.jar`
 
+### Start the Test-Microservice-Project
+
+As you may notice, just running the app doesnt fetch any services. So i built a [spring boot project](https://github.com/silasmahler/eureka-prometheus-bridge-tester) with some example-services to use. Maybe they also will be available as Docker-Containers in the future.
+
+
 ### Docker
 
 ##### Notice: 
