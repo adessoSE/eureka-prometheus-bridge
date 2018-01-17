@@ -2,7 +2,7 @@
 
 ### Features
 The bridge pulls the service-urls from eureka. 
-It provides a config-file for prometheus which contains the services endpoints as a target.
+It provides a config-file for prometheus which contains the services /prometheus endpoint (or any endpoint you define), so prometheus knows where to scrape for metrics.
 
 #### Configurable Parameters
 ```yml
