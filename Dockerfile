@@ -17,7 +17,7 @@
 #### Testing yml with prometheus -------------------------------------
 FROM prom/prometheus:latest
 
-COPY /generated-prometheus-config/prometheus.yml /etc/prometheus/prometheus.yml
+COPY /generated-prometheus-configs/prometheus.yml /etc/prometheus/prometheus.yml
 
 VOLUME /prometheus-data
 EXPOSE 9090:9090
