@@ -36,8 +36,9 @@ bridge.prometheus.configFileTemplatePath=src/main/resources/prometheus-basic.yml
 Docker is only for testing purposes with the prometheus-server. Due to the possible change of ports during runtime in the app, which docker isnt supporting without creating a new container-instance, this was left out.
 
 ##### But:
-If you start the Docker-Container you will be able to test the prometheus-instance it is spinning up immediately. The generated configs will be used as configs for prometheus. 
+If you start the Docker-Container with you will be able to test the prometheus-instance it is spinning up immediately. The generated configs will be used as configs for prometheus. Under your host on port 9090 you can find the server.
 
+To start the container exceute `docker build -t bridge_prometheus_test_server . && docker run -p 9090:9090 bridge_prometheus_test_server` in the project_dir.
 
 ### Releases and Dependency
 
