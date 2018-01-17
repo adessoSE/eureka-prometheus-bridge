@@ -3,7 +3,41 @@
 ### Features
 The bridge pulls the service-urls from eureka. 
 It provides a config-file for prometheus which contains the services endpoints as a target.
-You can
+
+#### Configurable Parameters
+```yml
+spring.application.name=eureka-prometheus-bridge
+server.port=1111
+eureka.client.register-with-eureka=false
+
+query.interval.second=60
+
+bridge.eureka.port=8761
+bridge.eureka.host=http://127.0.0.1
+bridge.eureka.apipath=/eureka/apps/
+bridge.eureka.showJson=false
+
+bridge.prometheus.scrapeinterval=15 
+bridge.prometheus.scrapetimeout=10 
+bridge.prometheus.metricspath=/prometheus 
+bridge.prometheus.scheme=http
+bridge.prometheus.generatedConfigFilePath=generated-prometheus-configs/prometheus.yml
+bridge.prometheus.configFileTemplatePath=src/main/resources/prometheus-basic.yml
+```
+
+### Start the application
+
+1. In the project_dir use `gradlew build`
+2. Run the jar under `.\build\libs\eureka-prometheus-bridge-0.0.1.jar`
+
+### Docker
+
+##### Notice: 
+Docker is only for testing purposes with the prometheus-server. Due to the possible change of ports during runtime in the app, which docker isnt supporting without creating a new container-instance, this was left out.
+
+##### But:
+If you start the Docker-Container you will be able to test the prometheus-instance it is spinning up immediately. The generated configs will be used as configs for prometheus. 
+
 
 ### Releases and Dependency
 
