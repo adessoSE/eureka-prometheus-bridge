@@ -2,7 +2,7 @@
   "package": {
     "name": "eureka-prometheus-bridge",
     "repo": "eureka-prometheus-bridge",
-    "subject": "silasmahler",
+    "subject": "adessoag",
     "desc": "Eureka Prometheus Bridge",
     "website_url": "https://www.adesso.de",
     "issue_tracker_url": "https://github.com/adessoAG/eureka-prometheus-bridge/issues",
