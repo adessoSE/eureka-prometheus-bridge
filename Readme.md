@@ -4,6 +4,9 @@
 The bridge pulls the service-urls from eureka. 
 It provides a config-file for prometheus which contains the services /prometheus endpoint (or any endpoint you define), so prometheus knows where to scrape for metrics.
 
+#### Test it
+To test the project a fully dockerized spring-boot-kotlin app is available [here](https://github.com/adessoAG/eureka-prometheus-bridge-tester).
+
 #### Configurable Parameters
 ```yml
 spring.application.name=eureka-prometheus-bridge
