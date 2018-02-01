@@ -1,10 +1,17 @@
 package de.adesso.eurekaprometheusbridge
 
-import org.springframework.boot.context.properties.ConfigurationProperties
+import io.github.konfigur8.ConfigurationTemplate
+import io.github.konfigur8.Property
 
-@ConfigurationProperties("bridge.eureka")
-data class EurekaProperties(
-        var port: Int = Integer.valueOf(8761),
-        var host: String = "http://127.0.0.1",
-        var apiPath: String = "/eureka/apps/",
-        var showJson: Boolean = false)
+object EurekaProperties {
+    var port = Property.int("eureka.bridge.port")
+    var host = Property.string("eureka.bridge.host")
+    var apiPath  = Property.string("eureka.bridge.apiPath")
+    var showJson  = Property.bool("eureka.bridge.showJson")
+    
+    val configTemplate = ConfigurationTemplate()
+            .withProp(port, 8761)
+            .withProp(host,  "http://127.0.0.1")
+            .withProp(apiPath,  "/eureka/apps/")
+            .withProp(showJson,  false)
+}

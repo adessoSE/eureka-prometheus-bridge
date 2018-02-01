@@ -10,14 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class EurekaQuery(
-        @Autowired var gen: Generator,
-        @Autowired var eureka: EurekaProperties
+class EurekaQuery (
+        @Autowired var gen: Generator
 ) {
-
     companion object {
         val log = LoggerFactory.getLogger(ScheduledJobs::class.java.name)
+        var config = EurekaProperties.configTemplate.reify()
     }
+
 
     var configEntries = ArrayList<ConfigEntry>()
 
@@ -28,7 +28,7 @@ class EurekaQuery(
         log.info("Query Eureka ...")
         var r: Response?
         try {
-            r = get(eureka.host + ":" + eureka.port + eureka.apiPath)
+            r = get(config.valueOf(EurekaProperties.host) + ":" + config.valueOf(EurekaProperties.port) + config.valueOf(EurekaProperties.apiPath))
         } catch (e: Exception) {
             log.info("Requesting Eureka failed!... Trying again in some time.")
             return
@@ -38,7 +38,7 @@ class EurekaQuery(
             log.info("Status: " + r.statusCode)
             //Convert xml tto JSON
             val JSONObjectFromXML = XML.toJSONObject(r.text)
-            if (eureka.showJson) {
+            if (config.valueOf(EurekaProperties.showJson)) {
                 val jsonPrettyPrintString = JSONObjectFromXML.toString(4)
                 log.info(""""
                 ${jsonPrettyPrintString}

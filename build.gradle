@@ -56,6 +56,7 @@ compileTestKotlin {
 
 repositories {
 	mavenCentral()
+	jcenter()
 	maven { url 'https://repo.spring.io/libs-snapshot' }
 	maven { url "https://repo.spring.io/snapshot" }
 	maven { url "https://repo.spring.io/milestone" }
@@ -67,9 +68,11 @@ ext {
 }
 
 dependencies {
+	compile('io.github.daviddenton:konfigur8:1.7.0')
 	compile("com.github.jkcclemens:khttp:0.1.0")
 	compile('org.springframework.boot:spring-boot-starter')
 	compile('org.springframework.boot:spring-boot-starter-logging')
+	compile("org.springframework.boot:spring-boot-configuration-processor")
 	compile("org.jetbrains.kotlin:kotlin-stdlib-jre8")
 	compile("org.jetbrains.kotlin:kotlin-reflect")
 	compile("com.fasterxml.jackson.module:jackson-module-kotlin")
