@@ -1,3 +1,9 @@
+[![GitHub issues](https://img.shields.io/github/issues/adessoAG/eureka-prometheus-bridge.svg?style=flat-square)](https://github.com/adessoAG/eureka-prometheus-bridge/issues)
+[![GitHub stars](https://img.shields.io/github/stars/adessoAG/eureka-prometheus-bridge.svg?style=flat-square)](https://github.com/adessoAG/eureka-prometheus-bridge/stargazers)
+[![GitHub license](https://img.shields.io/github/license/adessoAG/eureka-prometheus-bridge.svg?style=flat-square)](https://github.com/adessoAG/eureka-prometheus-bridge/blob/master/LICENSE)
+![](https://img.shields.io/badge/Nice-100%25-brightgreen.svg)
+
+
 # Bridge for Eureka and Prometheus.
 
 ### Features
