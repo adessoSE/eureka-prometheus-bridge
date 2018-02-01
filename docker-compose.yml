@@ -1,0 +1,46 @@
+version: '3.3'
+services:
+  eureka-service:
+    image: smahler/epb-eureka-service:latest
+    container_name: eureka-service
+    environment:
+      - "SPRING_PROFILES_ACTIVE=docker"
+    ports:
+      - 8761:8761
+  test-service:
+    image: smahler/epb-test-service:latest
+    container_name: test-service
+    environment:
+      - "SPRING_PROFILES_ACTIVE=docker"
+    links:
+      - eureka-service
+    ports:
+      - 1001:1001
+  test-service2:
+    image: smahler/epb-test-service2:latest
+    container_name: test-service2
+    environment:
+      - "SPRING_PROFILES_ACTIVE=docker"
+    links:
+      - eureka-service
+    ports:
+      - 1002:1002
+# Bridge-Application itself
+  eureka-prometheus-bridge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: eureka-prometheus-bridge
+    container_name: bridge
+    ports:
+      - 1111:1111
+# Monitoring-Server
+  prometheus:
+    build: dockerfile-prometheus/.
+    container_name: prometheus
+    volumes:
+      - prometheus-data
+    ports:
+      - 9090:9090
+
+
