@@ -41,8 +41,7 @@ bridge.prometheus.configFileTemplatePath=src/main/resources/prometheus-basic.yml
 
 ### Start the Test-Microservice-Project
 
-As you may notice, just running the app doesnt fetch any services. So i built a [spring boot project](https://github.com/silasmahler/eureka-prometheus-bridge-tester) with some example-services to use. Maybe they also will be available as Docker-Containers in the future.
-
+As you may notice, just running the app doesnt fetch any services. So i built a [spring boot project](https://github.com/silasmahler/eureka-prometheus-bridge-tester) with some example-services to use.
 
 ### Docker
 
