@@ -1,12 +1,22 @@
 package de.adesso.eurekaprometheusbridge
 
-import org.springframework.boot.context.properties.ConfigurationProperties
+import io.github.konfigur8.ConfigurationTemplate
+import io.github.konfigur8.Property
 
-@ConfigurationProperties("bridge.prometheus")
-data class PrometheusProperties(
-        var scrapeInterval: Int = Integer.valueOf(15),
-        var scrapeTimeout: Int = Integer.valueOf(10),
-        var metricsPath: String = "/prometheus",
-        var scheme: String = "http",
-        var configFileTemplatePath: String = "",
-        var generatedConfigFilePath: String = "")
+object PrometheusProperties {
+    var group = "bridge.prometheus"
+    var scrapeInterval = Property.int(group + "scrapeinterval")
+    var scrapeTimeout = Property.int(group + "scrapetimeout")
+    var metricsPath = Property.string(group + "metricspath")
+    var scheme  = Property.string(group + "scheme")
+    var configFileTemplatePath  = Property.string(group + "configFileTemplatePath")
+    var generatedConfigFilePath  = Property.string(group + "generatedConfigFilePath")
+
+    val configTemplate = ConfigurationTemplate()
+            .withProp(scrapeInterval, 15)
+            .withProp(scrapeTimeout,  10)
+            .withProp(metricsPath,  "/eureka/apps/")
+            .withProp(scheme,  "http")
+            .withProp(configFileTemplatePath,  "src/main/resources/prometheus-basic.yml")
+            .withProp(generatedConfigFilePath,  "generated-prometheus-configs/prometheus.yml")
+}
