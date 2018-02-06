@@ -22,15 +22,10 @@ class EurekaPrometheusBridgeApplication {
     @PostConstruct
     fun checkConfigurationParameters() {
         //Check Config-Template existing
-        try {
-            var file: File? = File(prometheus_config.get(PrometheusProperties.configFileTemplatePath))
-            if(file == null){
-                throw FileNotFoundException("The configFileTemplate wasn't found under: " + PrometheusProperties.configFileTemplatePath +
-                        "\n The App can't start.")
-            }
-        } catch (e: Exception){
+        var file = File(prometheus_config.get(PrometheusProperties.configFileTemplatePath))
+        if (!file.exists() || file.isDirectory()) {
             throw FileNotFoundException("The configFileTemplate wasn't found under: " + PrometheusProperties.configFileTemplatePath +
-            "\n The App can't start.")
+                    "\n The App can't start and will shut down.")
         }
         //Log all Parameters and Values (config_template exiting - throught konfigur8 secured)
         log.info("-------------- Initial Eureka-Properties --------------------------------")
@@ -48,7 +43,7 @@ class EurekaPrometheusBridgeApplication {
         logConfigParameter(PrometheusProperties.scheme, prometheus_config)
         logConfigParameter(PrometheusProperties.configFileTemplatePath, prometheus_config)
         logConfigParameter(PrometheusProperties.generatedConfigFilePath, prometheus_config)
-       log.info("-------------- Initial Prometheus-Properties end --------------------------------")
+        log.info("-------------- Initial Prometheus-Properties end --------------------------------")
     }
 
     fun logConfigParameter(prop: Property<*>, config: Configuration) {
