@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class EurekaQuery (
+class EurekaQuery(
         @Autowired var gen: Generator
 ) {
     companion object {
