@@ -71,6 +71,7 @@ dependencies {
 	compile('io.github.daviddenton:konfigur8:1.7.0')
 	compile("com.github.jkcclemens:khttp:0.1.0")
 	compile('org.springframework.boot:spring-boot-starter')
+	compile('org.springframework.boot:spring-boot-starter-aop')
 	compile('org.springframework.boot:spring-boot-starter-logging')
 	compile("org.springframework.boot:spring-boot-configuration-processor")
 	compile("org.jetbrains.kotlin:kotlin-stdlib-jre8")

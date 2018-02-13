@@ -11,7 +11,7 @@ class Generator {
     companion object {
         //With using a companion object the logger isnt created for each class instance, this is for best pratice purposes
         val log = LoggerFactory.getLogger(Generator::class.java.name)
-        var config = EurekaProperties.configTemplate.reify()
+        var config = PrometheusProperties.configTemplate.reify()
     }
 
     fun generatePrometheusConfig(entries: List<ConfigEntry>) {
