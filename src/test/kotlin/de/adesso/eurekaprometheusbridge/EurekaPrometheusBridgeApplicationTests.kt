@@ -9,6 +9,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.stereotype.Component
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.junit4.SpringRunner
 import java.io.File
@@ -29,7 +30,7 @@ class EurekaPrometheusBridgeApplicationTests {
     lateinit var scheduledJobs: ScheduledJobs
 
     @Test
-    fun loadConfigTemplates() {
+    fun testConfigTemplates() {
         var eureka_config = EurekaProperties.configTemplate.reify()
         var prometheus_config = PrometheusProperties.configTemplate.reify()
 
@@ -47,48 +48,50 @@ class EurekaPrometheusBridgeApplicationTests {
     }
 
     @Test
-    fun createConfigEntry(){
-       var testEntry = ConfigEntry(name = "TestEntry", targeturl = "http://localhost:1234")
+    fun testConfigEntry() {
+        var testEntry = ConfigEntry(name = "TestEntry", targeturl = "http://localhost:1234")
         assertEquals("TestEntry", testEntry.name)
         assertEquals("http://localhost:1234", testEntry.targeturl)
     }
 
     @Test
-    fun testEurekaQuery(){
-        eurekaQuery.queryEureka()
-    }
-
-    @Test
-    fun testGenerator(){
+    fun testGenerator() {
         var configEntries = ArrayList<ConfigEntry>()
         configEntries.add(ConfigEntry("TestEntry1", "http://localhost:1001"))
         configEntries.add(ConfigEntry("TestEntry2", "http://localhost:1002"))
         generator.generatePrometheusConfig(configEntries)
-       assertEquals(File(Generator.config.get(PrometheusProperties.testConfigFilePath)).readText(),
-                    File(Generator.config.get(PrometheusProperties.generatedConfigFilePath)).readText())
+        assertEquals(File(Generator.config.get(PrometheusProperties.testConfigFilePath)).readText(),
+                File(Generator.config.get(PrometheusProperties.generatedConfigFilePath)).readText())
     }
 
     @Test
-    fun testScheduledJobs(){
+    fun testEurekaQuery() {
+        eurekaQuery.queryEureka()
+    }
+
+    @Test
+    fun testScheduledJobs() {
         scheduledJobs.queryEureka()
     }
 
 }
 
 @Aspect
-open class TracingAspect{
+@Component
+open class TracingAspect {
 
-    @Pointcut("execution(@annotations * de.adesso.eurekaprometheusbridge.*.*(..))")
-    open fun testMethods() {}
+    @Pointcut("execution(* de.adesso.eurekaprometheusbridge.*.*(..))")
+    open fun testMethods() {
+    }
 
     @Around("testMethods()")
-    open fun before(joinPoint: ProceedingJoinPoint){
+    open fun before(joinPoint: ProceedingJoinPoint) {
         val log = LoggerFactory.getLogger(ScheduledJobs::class.java.name)
         val start = System.currentTimeMillis()
-        log.info("Going to call the method.")
+        log.info("Going to call the method: " + joinPoint.signature.name)
         val output = joinPoint.proceed()
-        log.info("Method execution completed.")
+        log.info("Method execution completed: " + joinPoint.signature.name)
         val elapsedTime = System.currentTimeMillis() - start
-        log.info("Method execution time: $elapsedTime milliseconds.")
+        log.info("Method execution time: $elapsedTime milliseconds for: " + joinPoint.signature.name)
     }
 }
