@@ -20,7 +20,7 @@ class EurekaPrometheusBridgeApplication {
     }
 
     @PostConstruct
-    fun checkConfigurationParameters() {
+    fun logConfigurationParameters() {
         //Check Config-Template existing
         var file = File(prometheus_config.get(PrometheusProperties.configFileTemplatePath))
         if (!file.exists() || file.isDirectory()) {
