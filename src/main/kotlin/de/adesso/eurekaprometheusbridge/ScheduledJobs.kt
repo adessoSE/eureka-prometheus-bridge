@@ -6,12 +6,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class ScheduledJobs(
-        @Autowired var eurekaQuery: EurekaQuery
-) {
-
-    /**Queries Eureka for all App-Data*/
+        @Autowired var eurekaQuery: EurekaQuery) {
+    
     @Scheduled(fixedDelayString = "\${query.interval.seconds:60}000")
-    fun queryEureka() {
+    fun executeBridge() {
         eurekaQuery.queryEureka()
     }
 }

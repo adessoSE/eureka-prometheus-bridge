@@ -71,7 +71,7 @@ class EurekaPrometheusBridgeApplicationTests {
 
     @Test
     fun testScheduledJobs() {
-        scheduledJobs.queryEureka()
+        scheduledJobs.executeBridge()
     }
 
 }
