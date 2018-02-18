@@ -55,12 +55,13 @@ As you may notice, just running the app doesnt fetch any services. So i built a 
 Run `docker-compose up` in the root-directory.
 
 The Applications will be available:
-| Service        |url           | What it does  |
-| -------------   |:-------------:| -----:|
-| Eureka Dasboard   |localhost:8761| Shows you the services of the Microservice landscape|
-| Prometheus-Server| localhost:9090| Monitors the services given in the prometheus.yml config file |
-| Test-Service 1 | localhost:1001| Is a test-service with a simple endpoint /test |
-| Test-Service 2 | localhost:1002| Is a test-service with a simple endpoint /test | |
+
+Service | url | What it does
+---|---|---
+Eureka Dasboard|localhost:8761| Shows you the services of the Microservice landscape
+Prometheus-Server| localhost:9090| Monitors the services given in the prometheus.yml config file
+Test-Service 1 | localhost:1001| Is a test-service with a simple endpoint /test
+Test-Service 2 | localhost:1002| Is a test-service with a simple endpoint /test
 
 
 # 3 Releases and Dependency
