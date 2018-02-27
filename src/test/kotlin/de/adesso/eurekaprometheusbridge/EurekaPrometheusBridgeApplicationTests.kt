@@ -27,7 +27,7 @@ class EurekaPrometheusBridgeApplicationTests {
     lateinit var generator: Generator
 
     @Resource
-    lateinit var scheduledJobs: ScheduledJobs
+    lateinit var scheduledJob: ScheduledJob
 
     @Test
     fun testConfigTemplates() {
@@ -71,7 +71,7 @@ class EurekaPrometheusBridgeApplicationTests {
 
     @Test
     fun testScheduledJobs() {
-        scheduledJobs.executeBridge()
+        scheduledJob.executeBridge()
     }
 
 }
@@ -86,7 +86,7 @@ open class TracingAspect {
 
     @Around("testMethods()")
     open fun before(joinPoint: ProceedingJoinPoint) {
-        val log = LoggerFactory.getLogger(ScheduledJobs::class.java.name)
+        val log = LoggerFactory.getLogger(ScheduledJob::class.java.name)
         val start = System.currentTimeMillis()
         log.info("Going to call the method: " + joinPoint.signature.name)
         val output = joinPoint.proceed()

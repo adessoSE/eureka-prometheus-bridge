@@ -14,7 +14,7 @@ import javax.annotation.PostConstruct
 @EnableScheduling
 class EurekaPrometheusBridgeApplication {
     companion object {
-        val log = LoggerFactory.getLogger(ScheduledJobs::class.java.name)
+        val log = LoggerFactory.getLogger(ScheduledJob::class.java.name)
         var eureka_config = EurekaProperties.configTemplate.reify()
         var prometheus_config = PrometheusProperties.configTemplate.reify()
     }
