@@ -14,7 +14,7 @@ class EurekaQuery(
         @Autowired var gen: Generator
 ) {
     companion object {
-        val log = LoggerFactory.getLogger(ScheduledJob::class.java.name)
+        val log = LoggerFactory.getLogger(EurekaQuery::class.java.name)
         var config = EurekaProperties.configTemplate.reify()
     }
 
