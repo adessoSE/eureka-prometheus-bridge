@@ -3,6 +3,7 @@ services:
   eureka-service:
     image: 'smahler/epb-eureka-service:latest'
     container_name: eureka-service
+    restart: on-failure
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     ports:
@@ -10,6 +11,7 @@ services:
   test-service:
     image: 'smahler/epb-test-service:latest'
     container_name: test-service
+    restart: on-failure
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     links:
@@ -19,23 +21,25 @@ services:
   test-service2:
     image: 'smahler/epb-test-service2:latest'
     container_name: test-service2
+    restart: on-failure
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     links:
       - eureka-service
     ports:
       - '1002:1002'
-  eureka-prometheus-bridge:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: eureka-prometheus-bridge
-    container_name: bridge
-    ports:
+  #eureka-prometheus-bridge:
+   # build:
+    #  context: .
+     # dockerfile: Dockerfile
+   # image: eureka-prometheus-bridge
+   # container_name: bridge
+    #ports:
       - '1111:1111'
   prometheus:
     build: dockerfile-prometheus/.
     container_name: prometheus
+    restart: on-failure
     volumes:
       - prometheus-data
     ports:
