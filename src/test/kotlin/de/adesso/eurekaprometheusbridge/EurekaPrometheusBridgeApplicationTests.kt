@@ -34,17 +34,17 @@ class EurekaPrometheusBridgeApplicationTests {
         var eureka_config = EurekaProperties.configTemplate.reify()
         var prometheus_config = PrometheusProperties.configTemplate.reify()
 
-        assertEquals(8761, eureka_config.valueOf(EurekaProperties.port))
-        assertEquals("http://127.0.0.1", eureka_config.valueOf(EurekaProperties.host))
-        assertEquals("/eureka/apps/", eureka_config.valueOf(EurekaProperties.apiPath))
-        assertEquals(false, eureka_config.valueOf(EurekaProperties.showJson))
+        assertEquals(8761, eureka_config[EurekaProperties.port])
+        assertEquals("http://127.0.0.1", eureka_config[EurekaProperties.host])
+        assertEquals("/eureka/apps/", eureka_config[EurekaProperties.apiPath])
+        assertEquals(false, eureka_config[EurekaProperties.showJson])
 
-        assertEquals(15, prometheus_config.valueOf(PrometheusProperties.scrapeInterval))
-        assertEquals(10, prometheus_config.valueOf(PrometheusProperties.scrapeTimeout))
-        assertEquals("/eureka/apps/", prometheus_config.valueOf(PrometheusProperties.metricsPath))
-        assertEquals("http", prometheus_config.valueOf(PrometheusProperties.scheme))
-        assertEquals("src/main/resources/prometheus-basic.yml", prometheus_config.valueOf(PrometheusProperties.configFileTemplatePath))
-        assertEquals("generated-prometheus-configs/prometheus.yml", prometheus_config.valueOf(PrometheusProperties.generatedConfigFilePath))
+        assertEquals(15, prometheus_config[PrometheusProperties.scrapeInterval])
+        assertEquals(10, prometheus_config[PrometheusProperties.scrapeTimeout])
+        assertEquals("/eureka/apps/", prometheus_config[PrometheusProperties.metricsPath])
+        assertEquals("http", prometheus_config[PrometheusProperties.scheme])
+        assertEquals("src/main/resources/prometheus-basic.yml", prometheus_config[PrometheusProperties.configFileTemplatePath])
+        assertEquals("generated-prometheus-configs/prometheus.yml", prometheus_config[PrometheusProperties.generatedConfigFilePath])
     }
 
     @Test
@@ -60,8 +60,8 @@ class EurekaPrometheusBridgeApplicationTests {
         configEntries.add(ConfigEntry("TestEntry1", "http://localhost:1001"))
         configEntries.add(ConfigEntry("TestEntry2", "http://localhost:1002"))
         generator.generatePrometheusConfig(configEntries)
-        assertEquals(File(Generator.config.get(PrometheusProperties.testConfigFilePath)).readText(),
-                File(Generator.config.get(PrometheusProperties.generatedConfigFilePath)).readText())
+        assertEquals(File(Generator.config[PrometheusProperties.testConfigFilePath]).readText(),
+                File(Generator.config[PrometheusProperties.generatedConfigFilePath]).readText())
     }
 
     @Test

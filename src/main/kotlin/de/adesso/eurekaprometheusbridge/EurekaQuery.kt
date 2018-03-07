@@ -28,7 +28,7 @@ class EurekaQuery(
         log.info("Query Eureka ...")
         var r: Response?
         try {
-            r = get(config.valueOf(EurekaProperties.host) + ":" + config.valueOf(EurekaProperties.port) + config.valueOf(EurekaProperties.apiPath))
+            r = get(config[EurekaProperties.host] + ":" + config[EurekaProperties.port] + config[EurekaProperties.apiPath])
         } catch (e: Exception) {
             log.info("Requesting Eureka failed!... Trying again in some time.")
             return
@@ -38,7 +38,7 @@ class EurekaQuery(
             log.info("Status: " + r.statusCode)
             //Convert xml tto JSON
             val JSONObjectFromXML = XML.toJSONObject(r.text)
-            if (config.valueOf(EurekaProperties.showJson)) {
+            if (config[EurekaProperties.showJson]) {
                 val jsonPrettyPrintString = JSONObjectFromXML.toString(4)
                 log.info(""""
                 ${jsonPrettyPrintString}

@@ -1,7 +1,6 @@
 package de.adesso.eurekaprometheusbridge
 
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.io.File
 
@@ -16,21 +15,21 @@ class Generator {
 
     fun generatePrometheusConfig(entries: List<ConfigEntry>) {
         log.info("Reading basic Prometheusfile")
-        var template = File(config.get(PrometheusProperties.configFileTemplatePath)).readText()
+        var template = File(config[PrometheusProperties.configFileTemplatePath]).readText()
         for (configEntry in entries) {
             var entry = """
 - job_name: ${configEntry.name}
-  scrape_interval: ${config.get(PrometheusProperties.scrapeInterval)}s
-  scrape_timeout: ${config.get(PrometheusProperties.scrapeTimeout)}s
-  metrics_path: ${config.get(PrometheusProperties.metricsPath)}
-  scheme: ${config.get(PrometheusProperties.scheme)}
+  scrape_interval: ${config[PrometheusProperties.scrapeInterval]}s
+  scrape_timeout: ${config[PrometheusProperties.scrapeTimeout]}s
+  metrics_path: ${config[PrometheusProperties.metricsPath]}
+  scheme: ${config[PrometheusProperties.scheme]}
   static_configs:
   - targets:
     - ${configEntry.targeturl}
                 """.trimIndent()
             template += "\n" + entry
         }
-        var file = File(config.get(PrometheusProperties.generatedConfigFilePath))
+        var file = File(config[PrometheusProperties.generatedConfigFilePath])
         file.writeText(template)
         log.info("Config generated!")
     }
