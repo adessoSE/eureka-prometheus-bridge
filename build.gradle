@@ -70,6 +70,7 @@ ext {
 dependencies {
 	compile('io.github.daviddenton:konfigur8:1.7.0')
 	compile("com.github.jkcclemens:khttp:0.1.0")
+	compile('com.google.guava:guava:24.0-jre')
 	compile('org.springframework.boot:spring-boot-starter')
 	compile('org.springframework.boot:spring-boot-starter-aop')
 	compile('org.springframework.boot:spring-boot-starter-logging')
