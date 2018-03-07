@@ -34,10 +34,14 @@ services:
     ports:
       - '1111:1111'
   prometheus:
-    build: dockerfile-prometheus/.
+    image: prom/prometheus:v2.1.0
     container_name: prometheus
-    restart: on-failure
     volumes:
       - prometheus-data
     ports:
       - '9090:9090'
+    configs:
+      - source: generated_config
+        target: etc/prometheus/prometheus.yml
+generated_config:
+  file: generated-prometheus-configs/prometheus.yml

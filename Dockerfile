@@ -14,5 +14,5 @@ ENTRYPOINT MAXRAM=$(expr `cat /sys/fs/cgroup/memory/memory.limit_in_bytes` / 102
 #when "-XX:+UseCGroupMemoryLimitForHeap" isn't experimental anymore, you can use the following
 #ENTRYPOINT java -XX:+UseCGroupMemoryLimitForHeap -Djava.security.egd=file:/dev/./urandom -jar -Dspring.profiles.active="$springprofiles" myapp.jar
 
-VOLUME .:.
+VOLUME /generated-prometheus-configs/:/generated-prometheus-configs/
 EXPOSE 1111
