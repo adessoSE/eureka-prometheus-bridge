@@ -17,7 +17,7 @@ object PrometheusProperties {
             .withProp(scrapeTimeout, 10)
             .withProp(metricsPath, "/eureka/apps/")
             .withProp(scheme, "http")
-            .withProp(configFileTemplatePath, "src/main/resources/prometheus-basic.yml")
+            .withProp(configFileTemplatePath, "/prometheus-basic.yml")
             .withProp(generatedConfigFilePath, "generated-prometheus-configs/prometheus.yml")
-            .withProp(testConfigFilePath, "src/test/resources/prometheus-test.yml")
+            .withProp(testConfigFilePath, "/prometheus-test.yml")
 }

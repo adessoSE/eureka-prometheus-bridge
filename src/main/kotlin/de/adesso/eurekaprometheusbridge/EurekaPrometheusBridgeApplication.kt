@@ -6,15 +6,17 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.scheduling.annotation.EnableScheduling
-import java.io.File
 import java.io.FileNotFoundException
 import javax.annotation.PostConstruct
+import java.io.InputStreamReader
+import org.springframework.core.io.ClassPathResource
+import com.google.common.io.CharStreams
 
 @SpringBootApplication
 @EnableScheduling
 class EurekaPrometheusBridgeApplication {
     companion object {
-        val log = LoggerFactory.getLogger(ScheduledJob::class.java.name)
+        val log = LoggerFactory.getLogger(this::class.java.name)
         var eureka_config = EurekaProperties.configTemplate.reify()
         var prometheus_config = PrometheusProperties.configTemplate.reify()
     }
@@ -22,10 +24,15 @@ class EurekaPrometheusBridgeApplication {
     @PostConstruct
     fun logConfigurationParameters() {
         //Check Config-Template existing
-        var file = File(prometheus_config.get(PrometheusProperties.configFileTemplatePath))
-        if (!file.exists() || file.isDirectory()) {
+        var resource = ClassPathResource(prometheus_config.get(PrometheusProperties.configFileTemplatePath)) //null if empty
+        if(!resource.exists()){
             throw FileNotFoundException("The configFileTemplate wasn't found under: " + PrometheusProperties.configFileTemplatePath +
-                    "\n The App can't start and will shut down.")
+                    "\n The App can't start and will shut down.")        }
+        else {
+            var resourceInputStream = resource.inputStream
+            var string = CharStreams.toString(InputStreamReader(resourceInputStream, "UTF-8"))
+            log.info("The configFileTemplate was found on the classpath under: " + prometheus_config.get(PrometheusProperties.configFileTemplatePath))
+            //log.info(string)
         }
         //Log all Parameters and Values (config_template exiting - throught konfigur8 secured)
         log.info("-------------- Initial Eureka-Properties --------------------------------")
