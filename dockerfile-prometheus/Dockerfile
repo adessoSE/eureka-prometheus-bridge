@@ -2,5 +2,5 @@
 FROM prom/prometheus:latest
 COPY /generated-prometheus-configs/prometheus.yml /etc/prometheus/prometheus.yml
 VOLUME /prometheus-data
-EXPOSE 9090:9090
+EXPOSE 9090
 
