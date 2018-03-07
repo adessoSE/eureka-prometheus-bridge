@@ -28,13 +28,10 @@ services:
       - eureka-service
     ports:
       - '1002:1002'
-  #eureka-prometheus-bridge:
-   # build:
-    #  context: .
-     # dockerfile: Dockerfile
-   # image: eureka-prometheus-bridge
-   # container_name: bridge
-    #ports:
+  eureka-prometheus-bridge:
+    build: .
+    container_name: eureka-prometheus-bridge
+    ports:
       - '1111:1111'
   prometheus:
     build: dockerfile-prometheus/.
