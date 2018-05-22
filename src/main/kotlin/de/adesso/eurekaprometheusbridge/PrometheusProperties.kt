@@ -18,6 +18,6 @@ object PrometheusProperties {
             .withProp(metricsPath, "/eureka/apps/")
             .withProp(scheme, "http")
             .withProp(configFileTemplatePath, "/prometheus-basic.yml")
-            .withProp(generatedConfigFilePath, "generated-prometheus-configs/prometheus.yml")
+            .withProp(generatedConfigFilePath, "dockerfile-prometheus/generated-prometheus-configs/prometheus.yml")
             .withProp(testConfigFilePath, "/prometheus-test.yml")
 }

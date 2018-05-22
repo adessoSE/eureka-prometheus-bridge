@@ -2,7 +2,7 @@ FROM openjdk:8-jre-alpine
 #RUN echo "Europe/Berlin" > /etc/timezone && dpkg-reconfigure -f noninteractive tzdata
 ADD ./build/libs/eurekaprometheusbridge-0.0.1.jar myapp.jar
 
-ADD generated-prometheus-configs/prometheus.yml generated-prometheus-configs/prometheus.yml:
+ADD dockerfile-prometheus/generated-prometheus-configs generated-prometheus-configs/prometheus.yml
 
 ENV springprofiles="docker" MAXRAMIFNOLIMIT=4096
 
